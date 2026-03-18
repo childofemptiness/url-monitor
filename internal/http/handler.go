@@ -2,11 +2,16 @@ package http
 
 import (
 	"net/http"
+
 	"url-monitor/internal/monitor"
 )
 
 type Handler struct {
-	monitorService *monitor.Service
+	service *monitor.Service
+}
+
+func NewHandler(service *monitor.Service) *Handler {
+	return &Handler{service: service}
 }
 
 func (h *Handler) Health(w http.ResponseWriter, r *http.Request) {
