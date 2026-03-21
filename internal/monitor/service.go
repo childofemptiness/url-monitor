@@ -8,6 +8,7 @@ import (
 
 type Repository interface {
 	Create(ctx context.Context, monitor Monitor) (Monitor, error)
+	List(ctx context.Context) ([]Monitor, error)
 }
 
 type Service struct {
@@ -44,6 +45,8 @@ func (s *Service) CreateMonitor(ctx context.Context, input CreateMonitorInput) (
 
 	return created, nil
 }
+
+func (s *Service) ListMonitors(ctx context.Context) ([]Monitor, error)
 
 func (s *Service) validateURL(raw string) bool {
 	raw = strings.TrimSpace(raw)

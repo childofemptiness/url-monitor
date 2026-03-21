@@ -49,3 +49,47 @@ type CreateMonitorInput struct {
 
 func (s *Service) CreateMonitor(ctx context.Context, input CreateMonitorInput) (Monitor, Error)
 ```
+
+## List Monitors
+
+### Use case
+Client gets list of monitors
+
+### Endpoint
+```GET /monitors```
+
+**Success response**
+
+Status: ```200 OK```
+```json
+{
+    "data": [
+        {
+            "id": 1,
+            "url": "https://example1.com",
+            "interval_seconds": 10
+        },
+        {
+            "id": 2,
+            "url": "https://example2.com",
+            "interval_seconds": 20
+        },
+        {
+            "id": 3,
+            "url": "https://example3.com",
+            "interval_seconds": 30
+        }
+    ],
+    "meta": {
+        "total": 3
+    }
+}
+```
+
+**Error responses**
+- ```500 Internal Server Error```  for unexpeceted internal errors
+
+**Service Contract**
+```go
+func (s *Service) ListMonitors(ctx contenxt.Context) ([]Monitor, error)
+```

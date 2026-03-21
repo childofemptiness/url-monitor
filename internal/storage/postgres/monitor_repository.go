@@ -44,6 +44,8 @@ func (r *Repository) Create(ctx context.Context, m monitor.Monitor) (monitor.Mon
 	return created, nil
 }
 
+func (r *Repository) List(ctx context.Context) ([]monitor.Monitor, error)
+
 func isUniqueViolation(err error) bool {
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
