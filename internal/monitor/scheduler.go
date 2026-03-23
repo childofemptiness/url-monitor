@@ -6,10 +6,10 @@ import (
 )
 
 type SchedulerRepository interface {
-	ListDue(ctx context.Context, now time.Time, liimt int) ([]Monitor, error)
+	ListDue(ctx context.Context, now time.Time, limit int) ([]Monitor, error)
 }
 
 type Scheduler struct {
-	repo 		 SchedulerRepository
+	repo         SchedulerRepository
 	monitorsChan chan Monitor
 }

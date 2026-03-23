@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"time"
 	"url-monitor/internal/monitor"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -33,6 +34,9 @@ func (r *Repository) Create(ctx context.Context, m monitor.Monitor) (monitor.Mon
 		&created.ID,
 		&created.URL,
 		&created.IntervalSeconds,
+		&created.CreatedAt,
+		&created.UpdatedAt,
+		&created.LastCheckAt,
 		&created.NextCheckAt,
 	)
 	if err != nil {
@@ -60,7 +64,29 @@ func (r *Repository) List(ctx context.Context) ([]monitor.Monitor, error) {
 		ORDER BY id ASC
 	`
 
-	rows, err := r.pool.Query(ctx, query)
+	return r.executeQuery(ctx, query)
+}
+
+func (r *Repository) ListDue(ctx context.Context, now time.Time, limit int) ([]monitor.Monitor, error) {
+	query := `
+		SELECT 
+			id, 
+			url, 
+			interval_seconds, 
+			created_at, updated_at, 
+			last_check_at, 
+			next_check_at
+		FROM monitors
+		WHERE next_check_at <= $1
+		ORDER BY id ASC
+		LIMIT $2
+	`
+
+	return r.executeQuery(ctx, query, now, limit)
+}
+
+func (r *Repository) executeQuery(ctx context.Context, query string, args ...any) ([]monitor.Monitor, error) {
+	rows, err := r.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
