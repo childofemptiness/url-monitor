@@ -7,13 +7,13 @@ import (
 	"time"
 )
 
-type MonitorRepository interface {
+type Repository interface {
 	Create(ctx context.Context, monitor Monitor) (Monitor, error)
 	List(ctx context.Context) ([]Monitor, error)
 }
 
 type Service struct {
-	repo MonitorRepository
+	repo Repository
 }
 
 type CreateMonitorInput struct {
@@ -21,7 +21,7 @@ type CreateMonitorInput struct {
 	IntervalSeconds int
 }
 
-func NewMonitorService(repo MonitorRepository) *Service {
+func NewMonitorService(repo Repository) *Service {
 	return &Service{repo: repo}
 }
 
