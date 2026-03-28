@@ -13,10 +13,10 @@ func TestCheckerChecker_OK(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	checker := Checker{}
+	checker := CheckRunner{}
 
 	got := checker.Check(context.Background(), Monitor{
-		URL: srv.URL,
+		URL:             srv.URL,
 		IntervalSeconds: 10,
 	})
 
@@ -35,10 +35,10 @@ func TestCheckerChecker_Down(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	checker := Checker{}
+	checker := CheckRunner{}
 
 	got := checker.Check(context.Background(), Monitor{
-		URL: srv.URL,
+		URL:             srv.URL,
 		IntervalSeconds: 10,
 	})
 
@@ -57,10 +57,10 @@ func TestCheckerChecker_Error(t *testing.T) {
 	}))
 	srv.Close()
 
-	checker := Checker{}
+	checker := CheckRunner{}
 
 	got := checker.Check(context.Background(), Monitor{
-		URL: srv.URL,
+		URL:             srv.URL,
 		IntervalSeconds: 10,
 	})
 

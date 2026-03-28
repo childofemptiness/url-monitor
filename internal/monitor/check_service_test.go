@@ -26,7 +26,7 @@ func (f *fakeCheckRepository) CompleteCheck(ctx context.Context, check MonitorCh
 
 func TestCheckService_SaveCheckResult_Success(t *testing.T) {
 	repo := &fakeCheckRepository{}
-	svc := NewCheckService(repo)
+	svc := NewCheckStoreService(repo)
 
 	ctx := context.Background()
 	check := newTestCheck()
@@ -52,7 +52,7 @@ func TestCheckService_SaveCheckResult_Success(t *testing.T) {
 
 func TestCheckService_SaveCheckResult_PropagateRepositoryError(t *testing.T) {
 	repo := &fakeCheckRepository{}
-	svc := NewCheckService(repo)
+	svc := NewCheckStoreService(repo)
 
 	repo.savedErr = ErrMonitorNotFound
 

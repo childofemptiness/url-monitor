@@ -6,9 +6,9 @@ import (
 	"time"
 )
 
-type Checker struct {}
+type CheckRunner struct{}
 
-func (c *Checker) Check(ctx context.Context, m Monitor) MonitorCheck {
+func (c *CheckRunner) Check(ctx context.Context, m Monitor) MonitorCheck {
 	client := &http.Client{
 		Timeout: time.Duration(m.IntervalSeconds/2) * time.Second,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -38,7 +38,9 @@ func (c *Checker) Check(ctx context.Context, m Monitor) MonitorCheck {
 		check.ResponseTimeMS = check.FinishedAt.Sub(check.StartedAt).Milliseconds()
 		return check
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	check.FinishedAt = time.Now()
 	check.ResponseTimeMS = check.FinishedAt.Sub(check.StartedAt).Milliseconds()
