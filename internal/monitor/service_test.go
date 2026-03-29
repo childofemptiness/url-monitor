@@ -5,7 +5,6 @@ import (
 	"errors"
 	"reflect"
 	"testing"
-	"time"
 )
 
 type fakeRepository struct {
@@ -34,7 +33,7 @@ func (f *fakeRepository) List(ctx context.Context) ([]Monitor, error) {
 		return []Monitor{}, nil
 	}
 
-	return monitorsList(), nil
+	return newTestMonitors(), nil
 }
 
 func TestService_CreateMonitor_Success(t *testing.T) {
@@ -137,7 +136,7 @@ func TestService_CreateMonitor_DuplicateMonitorError(t *testing.T) {
 func TestService_ListMonitors_Success(t *testing.T) {
 	repo := &fakeRepository{}
 	svc := NewMonitorService(repo)
-	monitors := monitorsList()
+	monitors := newTestMonitors()
 
 	ctx := context.Background()
 	receivedMonitors, err := svc.ListMonitors(ctx)
@@ -172,28 +171,5 @@ func TestService_ListMonitorsEmptyResult(t *testing.T) {
 
 	if len(receivedMonitors) != 0 {
 		t.Errorf("ListMonitors() got = %v, want %v monitors", len(receivedMonitors), 0)
-	}
-}
-
-func monitorsList() []Monitor {
-	return []Monitor{
-		{
-			ID:              1,
-			URL:             "https://example1.com",
-			IntervalSeconds: 10,
-			CreatedAt:       time.Now().Add(-30 * time.Second),
-		},
-		{
-			ID:              2,
-			URL:             "https://example2.com",
-			IntervalSeconds: 20,
-			CreatedAt:       time.Now().Add(-20 * time.Second),
-		},
-		{
-			ID:              3,
-			URL:             "https://example3.com",
-			IntervalSeconds: 30,
-			CreatedAt:       time.Now().Add(-30 * time.Second),
-		},
 	}
 }

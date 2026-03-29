@@ -157,35 +157,3 @@ func TestWorkerPool_Run_Timeout(t *testing.T) {
 		t.Fatalf("failed to cancel worker pool: %s", err)
 	}
 }
-
-func newTestMonitor() Monitor {
-	return Monitor{
-		ID:              1,
-		URL:             "https://example1.com",
-		IntervalSeconds: 10,
-		CreatedAt:       time.Now().Add(-30 * time.Second),
-	}
-}
-
-func newTestMonitors() []Monitor {
-	return []Monitor{
-		{
-			ID:              1,
-			URL:             "https://example1.com",
-			IntervalSeconds: 10,
-			CreatedAt:       time.Now().Add(-30 * time.Second),
-		},
-		{
-			ID:              2,
-			URL:             "https://example2.com",
-			IntervalSeconds: 20,
-			CreatedAt:       time.Now().Add(-20 * time.Second),
-		},
-		{
-			ID:              3,
-			URL:             "https://example3.com",
-			IntervalSeconds: 30,
-			CreatedAt:       time.Now().Add(-30 * time.Second),
-		},
-	}
-}
