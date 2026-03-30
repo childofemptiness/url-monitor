@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 	"url-monitor/internal/monitor"
 
@@ -25,6 +26,8 @@ func (r *Repository) Create(ctx context.Context, m monitor.Monitor) (monitor.Mon
 		VALUES ($1, $2, $3)
 		RETURNING id, url, interval_seconds, created_at, updated_at, last_check_at, next_check_at
 	`
+
+	log.Printf("monitor m: %+v\n", m)
 
 	var created monitor.Monitor
 	err := r.pool.QueryRow(ctx, query,

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
+	"url-monitor/internal/config"
 	apphttp "url-monitor/internal/http"
 	"url-monitor/internal/monitor"
 	"url-monitor/internal/storage/postgres"
@@ -12,34 +14,76 @@ import (
 )
 
 type App struct {
-	server *http.Server
-	db     *pgxpool.Pool
+	cfg        *config.Config
+	server     *http.Server
+	db         *pgxpool.Pool
+	scheduler  *monitor.Scheduler
+	workerPool *monitor.WorkerPool
 }
 
-func New(ctx context.Context, addr, databaseURL string) (*App, error) {
-	pool, err := postgres.NewPool(ctx, databaseURL)
+func New(
+	ctx context.Context,
+	addr string,
+	cfg *config.Config,
+) (*App, error) {
+	pool, err := postgres.NewPool(ctx, cfg.DatabaseURL)
 	if err != nil {
 		return nil, err
 	}
 
-	monitorRepo    := postgres.NewMonitorRepository(pool)
-	monitorService := monitor.NewMonitorService(monitorRepo)
-	handler        := apphttp.NewHandler(monitorService)
-	router         := apphttp.NewRouter(handler)
+	repo := postgres.NewMonitorRepository(pool)
+	monitorService := monitor.NewMonitorService(repo)
+	checkService := monitor.NewCheckStoreService(repo)
+	checker := &monitor.CheckRunner{}
+	processor := monitor.NewCheckProcessor(checker, checkService)
+	workerPool := monitor.NewWorkerPool(processor, cfg.MonitorCheckWorkersCount, cfg.MonitorCheckQueueSize)
+	scheduler := monitor.NewScheduler(repo, workerPool, time.Duration(cfg.SchedulerTimeInterval)*time.Second)
+	handler := apphttp.NewHandler(monitorService)
+	router := apphttp.NewRouter(handler)
 
 	server := &http.Server{
-		Addr: addr,
+		Addr:    addr,
 		Handler: router,
 	}
 
 	return &App{
-		server: server,
-		db: pool,
+		cfg:        cfg,
+		server:     server,
+		db:         pool,
+		scheduler:  scheduler,
+		workerPool: workerPool,
 	}, nil
 }
 
 func (a *App) Run() error {
-	return a.server.ListenAndServe()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	errCh := make(chan error, 2)
+
+	go func(ctx context.Context) {
+		if err := a.scheduler.Run(ctx); err != nil {
+			errCh <- err
+		}
+	}(ctx)
+
+	go func(ctx context.Context) {
+		a.workerPool.Run(ctx)
+	}(ctx)
+
+	go func() {
+		if err := a.server.ListenAndServe(); err != nil {
+			errCh <- err
+		}
+
+		errCh <- nil
+	}()
+
+	err := <-errCh
+	defer close(errCh)
+
+	return err
 }
 
 func (a *App) Close(ctx context.Context) error {
